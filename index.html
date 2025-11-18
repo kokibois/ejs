@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="manifest" href="manifest.json">
   <script>
-    // PWA登録
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("sw.js");
@@ -36,7 +35,7 @@
 </div>
 
 <div class="box">
-  <input type="file" id="romInput" accept=".gba,.gb,.gbc,.nes,.sfc,.smc,.nds">
+  <input type="file" id="romInput">
 </div>
 
 <button id="startBtn">ゲーム開始</button>
@@ -46,30 +45,38 @@
 <script>
 document.getElementById("startBtn").onclick = async () => {
   const file = document.getElementById("romInput").files[0];
-  if (!file) {
-    alert("ROMファイルを選んでね！");
-    return;
-  }
+  if (!file) return alert("ROM選んでね〜");
 
   const core = document.getElementById("core").value;
-  const blobURL = URL.createObjectURL(file);
 
-  // EmulatorJS設定
+  // ROM → base64 に変換
+  const base64 = await fileToBase64(file);
+
   window.EJS_player = "#game";
   window.EJS_biosUrl = "";
-  window.EJS_gameUrl = blobURL;
+  // data URL として渡す
+  window.EJS_gameUrl = base64;
   window.EJS_core = core;
 
-  // 既に読み込んでたらリロード
+  // loader.js 再読み込み
   const old = document.getElementById("ejs-loader");
   if (old) old.remove();
 
-  // loader.js を読み込む
   const script = document.createElement("script");
   script.id = "ejs-loader";
   script.src = "https://www.emulatorjs.com/loader.js";
   document.body.appendChild(script);
 };
+
+// File → base64 変換
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result); // data: URL 形式になる
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 </script>
 
 </body>
