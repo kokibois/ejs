@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Offline EmulatorJS PWA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+  <script>
+    // PWA登録
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js");
+      });
+    }
+  </script>
+
+  <style>
+    body { background:#111; color:#fff; font-family:sans-serif; text-align:center; }
+    #game { width:640px; height:480px; max-width:100%; margin:auto; background:#000; }
+    .box { margin:20px 0; }
+  </style>
+</head>
+<body>
+
+<h2>Offline EmulatorJS PWA</h2>
+
+<div class="box">
+  <label>エミュレーター種別：</label>
+  <select id="core">
+    <option value="gba">GBA</option>
+    <option value="gb">GB</option>
+    <option value="nes">NES</option>
+    <option value="snes">SNES</option>
+    <option value="nds">NDS</option>
+  </select>
+</div>
+
+<div class="box">
+  <input type="file" id="romInput" accept=".gba,.gb,.gbc,.nes,.sfc,.smc,.nds">
+</div>
+
+<button id="startBtn">ゲーム開始</button>
+
+<div id="game"></div>
+
+<script>
+document.getElementById("startBtn").onclick = async () => {
+  const file = document.getElementById("romInput").files[0];
+  if (!file) {
+    alert("ROMファイルを選んでね！");
+    return;
+  }
+
+  const core = document.getElementById("core").value;
+  const blobURL = URL.createObjectURL(file);
+
+  // EmulatorJS設定
+  window.EJS_player = "#game";
+  window.EJS_biosUrl = "";
+  window.EJS_gameUrl = blobURL;
+  window.EJS_core = core;
+
+  // 既に読み込んでたらリロード
+  const old = document.getElementById("ejs-loader");
+  if (old) old.remove();
+
+  // loader.js を読み込む
+  const script = document.createElement("script");
+  script.id = "ejs-loader";
+  script.src = "https://www.emulatorjs.com/loader.js";
+  document.body.appendChild(script);
+};
+</script>
+
+</body>
+</html>
