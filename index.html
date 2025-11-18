@@ -49,14 +49,16 @@ document.getElementById("startBtn").onclick = async () => {
 
   const core = document.getElementById("core").value;
 
-  // ROM → base64 に変換
-  const base64 = await fileToBase64(file);
+  // File → ArrayBuffer
+  const arrayBuffer = await file.arrayBuffer();
 
   window.EJS_player = "#game";
   window.EJS_biosUrl = "";
-  // data URL として渡す
-  window.EJS_gameUrl = base64;
   window.EJS_core = core;
+
+  // ここがポイント！！
+  window.EJS_gameBlob = arrayBuffer;
+  window.EJS_gameUrl = "";  // URL は使わない
 
   // loader.js 再読み込み
   const old = document.getElementById("ejs-loader");
@@ -67,16 +69,6 @@ document.getElementById("startBtn").onclick = async () => {
   script.src = "https://www.emulatorjs.com/loader.js";
   document.body.appendChild(script);
 };
-
-// File → base64 変換
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result); // data: URL 形式になる
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 </script>
 
 </body>
